@@ -1,10 +1,14 @@
+Matterport : https://engineering.matterport.com/splash-of-color-instance-segmentation-with-mask-r-cnn-and-tensorflow-7c761e238b46
 Stanford Lecture : https://www.youtube.com/watch?v=nDPWywWRIRo
 Slides: http://cs231n.stanford.edu/slides/2017/cs231n_2017_lecture11.pdf
+
+also look at https://www.youtube.com/watch?v=-lXfsWP7DJ8 from 8:38 on
 
 Image Classification :
 * Question : what is the class of this thing in the picture ? (supposed to be alone)
 * Answer : image + CNN layers + FC layers + softmax -> class predictions
 * Limitations : works only for one thing in the picture
+intéressant : les métriques de succès (IoU, mAP) https://www.coursera.org/learn/deep-learning-in-computer-vision/lecture/tvLPq/object-detection-problem
 
 Semantic segmentation :
 * Question : what and where are things in the piture ? ie. for each pixel, to what class does it belong ?
@@ -12,6 +16,10 @@ Semantic segmentation :
 * Good answer : **Fully Convolutional Networks for Semantic Segmentation**
   * Idea 1 : turn FC layers into 1x1 CNN layers, so that you have a FCN (Fully convolutional network). Whatever the size of the image, the output will be proportional and compute all window convolutions at once.
   * Idea 2 : the result is a reduced image. So you need to **upsample**, in order to recover the orignal size. One way to do this is kind of reverting the maxpooling of the CNN. But in fact it's easier, and more accurate to learn **transpose convolution layers**. It's a kind of fractional Max Pooling, that upscales the image.
+  * Idea 3 : **Feature Pyramid Network** multiple scale upsample. The upsampling might be too coarse if the CNN is very deep make the subsampling important (like X32). To make it finer, we sum upsampling of outputs of the CNN at different stage of the network, like (((C5 upscale 2+ C4) upscale 2 + C3) upscale 2 + C2) upscale 4, instead of C5*32.
+See https://www.youtube.com/watch?v=-3ylPH3BCWY 4:40 and 9:00
+and original paper about FCN https://people.eecs.berkeley.edu/~jonlong/long_shelhamer_fcn.pdf
+and specifically about FCN : https://arxiv.org/pdf/1612.03144.pdf
 
 Image Classification and localization :
 * Question : same as before + where is it located ? (give me a bounding box)
