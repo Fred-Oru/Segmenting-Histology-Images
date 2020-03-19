@@ -1,6 +1,9 @@
 # Hidden Folders
 data/
 
+# pre-trained models you can find on the web
+*coco.h5
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
