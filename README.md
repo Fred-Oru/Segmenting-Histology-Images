@@ -1,4 +1,4 @@
-# Glomeruli Segmentation in Histoly images
+# Glomeruli Segmentation in Histology images
 
 This repository is an Artificial Intelligence project aiming to segment [kidney glomeruli](https://en.wikipedia.org/wiki/Glomerulus_(kidney)) in histology images.
 
