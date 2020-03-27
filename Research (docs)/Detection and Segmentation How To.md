@@ -1,4 +1,6 @@
 Matterport : https://engineering.matterport.com/splash-of-color-instance-segmentation-with-mask-r-cnn-and-tensorflow-7c761e238b46
+Notes sur le code : https://ronjian.github.io/blog/2018/05/16/Understand-Mask-RCNN
+Détails techniques du RCNN, notamment avec des explications sur le Pyramid ROI Align : https://medium.com/@fractaldle/mask-r-cnn-unmasked-c029aa2f1296
 Stanford Lecture : https://www.youtube.com/watch?v=nDPWywWRIRo
 Slides: http://cs231n.stanford.edu/slides/2017/cs231n_2017_lecture11.pdf
 
