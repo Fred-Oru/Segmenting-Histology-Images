@@ -40,8 +40,8 @@ import numpy as np
 import skimage.io
 from imgaug import augmenters as iaa
 # import pickle
-from cv2 import findContours
-from shutil import copyfile
+import cv2
+import shutil
 import zipfile
 
 # Root directory of the project
@@ -63,7 +63,7 @@ DEFAULT_LOGS_DIR = os.path.join(ROOT_DIR, "logs")
 
 # Results directory
 # Save detection outputs files here
-RESULTS_DIR = os.path.join(ROOT_DIR, "results/")
+RESULTS_DIR = os.path.join(ROOT_DIR, "results")
 
 # The dataset doesn't have a standard train/val split, so I picked
 # a variety of images to surve as a validation set.
@@ -209,13 +209,15 @@ class GlomerulusDataset(utils.Dataset):
 
             if subset_dir == "train":
                 img_dir = os.path.join(dataset_dir, image_id)
+                img_path = os.path.join(img_dir, "images/{}.jpg".format(image_id))
             else:
                 img_dir = dataset_dir
+                img_path = os.path.join(img_dir, "{}.jpg".format(image_id))
 
             self.add_image(
                 "glomerulus",
                 image_id=image_id,
-                path=os.path.join(img_dir, "images/{}.jpg".format(image_id)))
+                path=img_path)
 
     def load_mask(self, image_id):
         """Generate instance masks for an image.
@@ -385,8 +387,12 @@ def train(model, dataset_dir, subset):
 ############################################################
 
 def detect(model, dataset_dir, subset):
-    """Run detection on images in the given directory.
-    and saves image, masks and rois in the result folder
+    """Run detection on images in the given directory and saves results in RESULT_DIR
+    The RESULT_DIR folder is organized in the following way :
+        * one folder per image (named after the name of the image)
+        * one subfolder 'images' containing the image with a .jpg format
+        * one subfolder 'masks' containing them masks with a .png format
+        * one subfolder 'rois' containing the rois with a .roi format (not used)
     """
 
     assert subset not in ['train','val'], "trying to run detection on train or val set => abort"
@@ -395,7 +401,7 @@ def detect(model, dataset_dir, subset):
     # Create results directory
     if not os.path.exists(RESULTS_DIR):
         os.makedirs(RESULTS_DIR)
-    submit_dir = "{subset}_detect_{:%Y%m%dT%H%M%S}".format(subset,datetime.datetime.now())
+    submit_dir = "{}_detect_{:%Y%m%dT%H%M%S}".format(subset,datetime.datetime.now())
     submit_dir = os.path.join(RESULTS_DIR, submit_dir)
     os.makedirs(submit_dir)
 
@@ -418,15 +424,18 @@ def detect(model, dataset_dir, subset):
             dataset.class_names, r['scores'],
             show_bbox=False, show_mask=False,
             title="Predictions")
-        plt.savefig("{}/{}_result.png".format(submit_dir, img_name ))
-
+        try:
+            plt.savefig("{}/{}_result.png".format(submit_dir, img_name ))
+        except:
+            pass
         # creation result folder architecture
 
         subset_dir = os.path.join(dataset_dir,subset)
-        img_dir = os.path.join(submit_dir,"images")
+        img_dir = os.path.join(submit_dir,img_name)
         os.makedirs(img_dir)
-        # copy image in result folder
-        shutils.copyfile(dataset.image_info[image_id]["path"], os.path.join(img_dir,img_name+".jpg"))
+        img_subdir = os.path.join(img_dir,"images")
+        os.makedirs(img_subdir)
+        shutil.copyfile(dataset.image_info[image_id]["path"], os.path.join(img_subdir,img_name+".jpg"))
 
         mask_dir = os.path.join(img_dir,"masks")
         os.makedirs(mask_dir)
@@ -437,23 +446,23 @@ def detect(model, dataset_dir, subset):
         # save masks and rois
         for i in range(r['masks'].shape[2]): # shape = (h)x(w)x(number of masks)
             mask = (r['masks'][:,:,i]*255).astype('uint8')
-            mask_name = "{}-{}".format(img_name,i)
+            mask_name = "{}-{}".format(img_name,i+1)
             skimage.io.imsave("{}/{}.png".format(mask_dir, mask_name),mask)
 
             # extract roi from mask
             cnt = contour_from_mask(mask)
-            roi = roi_from_contour(mask_id+'.roi',cnt)
+            roi = roi_from_contour(mask_name+'.roi',cnt)
             bytes = bytes_from_roi(roi)
             with open(os.path.join(roi_dir,mask_name+'.roi'), "wb") as file:
                 file.write(bytes)
 
         # Create a ZipFile Object
-        with ZipFile(img_name + '_roi.zip', 'w') as zipObj:
-           # Add multiple files to the zip
-           for file in next(os.walk(roi_dir))[2]:
+        with zipfile.ZipFile(os.path.join(img_subdir,img_name + '_roi.zip'), 'w') as zipObj:
+            # Add multiple files to the zip
+            for file in next(os.walk(roi_dir))[2]:
                if file.endswith('.roi'):
-                   zipObj.write(file)
-
+                   zipObj.write(os.path.join(roi_dir,file),arcname=file)
+                    
 ###########################################################
 #  Command Line
 ############################################################
