@@ -1,8 +1,8 @@
 # Glomeruli Segmentation in Histology images
 
-This repository is an Artificial Intelligence project aiming to segment [kidney glomeruli](https://en.wikipedia.org/wiki/Glomerulus_(kidney)) in histology images. It uses the [Mask R-CNN implementation by Matterport](https://github.com/matterport/Mask_RCNN). 
+This repository is an Artificial Intelligence project aiming to segment [kidney glomeruli](https://en.wikipedia.org/wiki/Glomerulus_(kidney)) in histology images. It uses the [Mask R-CNN implementation by Matterport](https://github.com/matterport/Mask_RCNN).
 
-![Example of segmented image](Data/segmented_image.png)
+![Example of segmented image](DataSamples/segmented_image.png)
 
 ## Business Problem
 

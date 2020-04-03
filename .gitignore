@@ -1,10 +1,8 @@
-# Hidden Folders
+# Glomerulus specific
 data/
-
-# pre-trained models you can find on the web
 *coco.h5
-# logs (TensorFlow and models)
 logs/
+(ignore)*.*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
