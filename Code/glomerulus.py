@@ -196,10 +196,10 @@ class GlomerulusDataset(utils.Dataset):
         subset_dir = "train" if subset in ["train", "val"] else subset
         dataset_dir = os.path.join(dataset_dir, subset_dir)
         if subset_dir == "train":
-            image_ids = next(os.walk(dataset_dir))[1] # on directory per image
+            image_ids = next(os.walk(dataset_dir))[1] # one directory per image
             val_ids = [id for id in image_ids for start in VAL_IMAGE_STARTS_WITH if id.startswith(start) ]
             non_val_ids = [id for id in image_ids if id not in val_ids]
-            images_ids = val_ids if subset == "val" else non_val_ids
+            image_ids = val_ids if subset == "val" else non_val_ids
         else:
             image_ids = next(os.walk(dataset_dir))[2] # files
             image_ids = [id[:-4] for id in image_ids if id.endswith('.jpg')]
@@ -378,7 +378,7 @@ def train(model, dataset_dir, subset):
     print("Train all layers")
     model.train(dataset_train, dataset_val,
                 learning_rate=config.LEARNING_RATE,
-                epochs=45,
+                epochs=30,
                 augmentation=augmentation,
                 layers='all')
 
@@ -425,7 +425,7 @@ def detect(model, dataset_dir, subset):
             show_bbox=False, show_mask=False,
             title="Predictions")
         try:
-            plt.savefig("{}/{}_result.png".format(submit_dir, img_name ))
+            plt.savefig("{}/{}_result.png".format(submit_dir, img_name ), bbox_inches='tight')
         except:
             pass
         # creation result folder architecture
@@ -462,7 +462,7 @@ def detect(model, dataset_dir, subset):
             for file in next(os.walk(roi_dir))[2]:
                if file.endswith('.roi'):
                    zipObj.write(os.path.join(roi_dir,file),arcname=file)
-                    
+
 ###########################################################
 #  Command Line
 ############################################################
