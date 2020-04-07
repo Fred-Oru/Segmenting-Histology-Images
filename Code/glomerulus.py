@@ -354,14 +354,16 @@ def train(model, dataset_dir, subset):
 
     # Image augmentation
     # http://imgaug.readthedocs.io/en/latest/source/augmenters.html
-    augmentation = iaa.SomeOf((0, 2), [
+    augmentation = iaa.SomeOf((0, 3), [
         iaa.Fliplr(0.5),
         iaa.Flipud(0.5),
         iaa.OneOf([iaa.Affine(rotate=90),
                    iaa.Affine(rotate=180),
                    iaa.Affine(rotate=270)]),
         iaa.Multiply((0.8, 1.5)),
-        iaa.GaussianBlur(sigma=(0.0, 5.0))
+        iaa.GaussianBlur(sigma=(0.0, 5.0)),
+        iaa.GammaContrast((0.5, 2.0),per_channel=True),
+        iaa.Affine(scale=(0.5, 2.5))
     ])
 
     # *** This training schedule is an example. Update to your needs ***
@@ -378,7 +380,7 @@ def train(model, dataset_dir, subset):
     print("Train all layers")
     model.train(dataset_train, dataset_val,
                 learning_rate=config.LEARNING_RATE,
-                epochs=30,
+                epochs=40,
                 augmentation=augmentation,
                 layers='all')
 
