@@ -1,8 +1,9 @@
 """
 Mask R-CNN
 Train on the glomeruli segmentation dataset
-Written by Frederic Oru
+Author : Frederic Oru (2020)
 inspired from nucleus sample written by Waleed Abdulla
+as part of the MaskRCNN Matterport implementation
 
 ------------------------------------------------------------
 
@@ -15,7 +16,8 @@ Usage: import the module (see Jupyter notebooks for examples), or run from
     # Train a new model starting from specific weights file
     python3 glomerulus.py train --dataset=/path/to/dataset --subset=train --weights=/path/to/weights.h5
 
-    # Resume training a model that you had trained earlier
+    # Resume training a model that you had trained earlier.
+    # Make sure you didn't chang the name of the logs folder containing the last model, since it holds the last epoch number
     python3 glomerulus.py train --dataset=/path/to/dataset --subset=train --weights=last
 
     # Generate masks and .roi files
