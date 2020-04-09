@@ -3,6 +3,7 @@ data/
 *coco.h5
 logs/
 (ignore)*.*
+*.gslides
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
