@@ -87,29 +87,34 @@ As a consequence, the performance metrics are defined as :
 
 ## Results Log
 
-Version 0 :
+### Version 0 : Confined, limited access to data
+
 * Training dataset is composed of 200 VEGF x15 images.
-* Test dataset contains very different markers and scales
+* Test dataset is composed of 15 IgG and CD68 x15 images
+  * warning : labelled by the programmer => not fully accurate
 
-V0.2 - 2020/04/09
+#### V0.2 - 2020/04/09
+Major change : added augmenters scale and contrast
 
-|                | Train       | Valid       | Test |
-|----------------|-------------|-------------|------|
-|#images         | 161         | 39          |      |
-|#glomeruli      | 1161        | 277         |      |
-|#undetected     |2 (0.17%)    | 2 (0.72%)   |      |
-|#false positive |118 (10.16%) | 19 (6.86%)  |      |
-|#mean IoU on TP |0.8761       | 0.8852      |      |
-|#mean AP        |0.7639       | 0.7571      |      |
+|                | Train       | Valid       | Test x15|
+|----------------|-------------|-------------|---------|
+|#images         | 161         | 39          | 15      |
+|#glomeruli      | 1161        | 277         | 106     |
+|#undetected     |2 (0.17%)    | 2 (0.72%)   | 11 (10.38%)  |
+|#false positive |118 (10.16%) | 19 (6.86%)  | 6 (5.66%)   |
+|**#mean IoU on TP** |**0.8761**       |**0.8852**     | 0.7256     |
+|#mean AP        |0.7639       | 0.7571      | 0.5909     |
 
+Note : on Test, one image is responsible for 6 undetected
 
-V0.1 - 2020/03/23
+#### V0.1 - 2020/03/23
+40 epoch (20 head + 20 full)
 
-|                | Train       | Valid       | Test |
-|----------------|-------------|-------------|------|
-|#images         | 161         | 39          |      |
-|#glomeruli      | 1161        | 277         |      |
-|#undetected     |1 (0.09%)    | 1 (0.36%)   |      |
-|#false positive |162 (13.95%) | 35 (12.64%) |      |
-|#mean IoU on TP |0.6906       | 0.8349      |      |
-|#mean AP        |0.7194       | 0.7070      |      |
+|                | Train       | Valid       | Test x15|
+|----------------|-------------|-------------|---------|
+|#images         | 161         | 39          | 15 |
+|#glomeruli      | 1161        | 277         | 106 |
+|#undetected     |1 (0.09%)    | 1 (0.36%)   | 8 (7.55%) |
+|#false positive |162 (13.95%) | 35 (12.64%) | 10 (9.43%) |
+|**#mean IoU on TP** |**0.6906**       | **0.8349**      | 0.6847 |
+|#mean AP        |0.7194       | 0.7070      | 0.5782 |
