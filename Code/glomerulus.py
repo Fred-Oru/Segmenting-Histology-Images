@@ -174,17 +174,17 @@ class GlomerulusDataset(utils.Dataset):
     def load_glomerulus(self, dataset_dir, subset):
         """Load a subset of the glomeruli dataset.
         dataset_dir: Root directory of the dataset
-        subset: Subset to load. Either one of train, val or test
+        subset: Subset to load. Either one of train, val, test_xxx or run_yyy
             * train : all images in "train" subset except ids starting with VAL_IMAGE_STARTS_WITH
             * valid : images in "train" subset starting with VAL_IMAGE_STARTS_WITH
             * other : all images in "other" subset
-        The "train" subset is organized in the following way :
+        The 'run' folder is a plain folder containing images to run detection on
+        The other subset are to be organized in the following way (for perfomance tracking):
             * one folder per image (named after the name of the image)
             * one subfolder 'images' containing the image with a .jpg format
             * one subfolder 'masks' containing them masks with a .png format
             * one subfolder 'rois' containing the rois with a .roi format (not used)
-        The other folder is a plain folder containing images to run detection on
-        The result folder will be organized as the "train" folder, with one folder
+        The 'result' folder will be organized as the "train" folder, with one folder
         per image in the other folder
         """
         # Add classes. We have one class.
@@ -197,19 +197,19 @@ class GlomerulusDataset(utils.Dataset):
         # else: use the data from the specified sub-directory
         subset_dir = "train" if subset in ["train", "val"] else subset
         dataset_dir = os.path.join(dataset_dir, subset_dir)
-        if subset_dir == "train":
+        if ((subset_dir == "train") or (subset.startswith("test"))):
             image_ids = next(os.walk(dataset_dir))[1] # one directory per image
             val_ids = [id for id in image_ids for start in VAL_IMAGE_STARTS_WITH if id.startswith(start) ]
             non_val_ids = [id for id in image_ids if id not in val_ids]
             image_ids = val_ids if subset == "val" else non_val_ids
-        else:
+        else: # run_yyy folder
             image_ids = next(os.walk(dataset_dir))[2] # files
             image_ids = [id[:-4] for id in image_ids if id.endswith('.jpg')]
 
         # Add images
         for image_id in image_ids:
 
-            if subset_dir == "train":
+            if ((subset_dir == "train") or (subset.startswith("test"))):
                 img_dir = os.path.join(dataset_dir, image_id)
                 img_path = os.path.join(img_dir, "images/{}.jpg".format(image_id))
             else:
@@ -382,7 +382,7 @@ def train(model, dataset_dir, subset):
     print("Train all layers")
     model.train(dataset_train, dataset_val,
                 learning_rate=config.LEARNING_RATE,
-                epochs=40,
+                epochs=50,
                 augmentation=augmentation,
                 layers='all')
 
