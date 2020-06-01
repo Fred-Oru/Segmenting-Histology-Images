@@ -70,16 +70,14 @@ RESULTS_DIR = os.path.join(ROOT_DIR, "results")
 # The dataset doesn't have a standard train/val split, so I picked
 # a variety of images to surve as a validation set.
 VAL_IMAGE_STARTS_WITH = [
-    'R25 VEGF_15',
-    'R29 VEGF 2_15',
-    'R56 RD VEGF_15',
-    'R39 RD VEGF_15',
-    'R57 RD VEGF_15',
-    'R52 RD VEGF_15',
-    'R48 RD VEGF bas_15'
- ]
-NB_TRAIN_IMAGES = 158
-NB_VALID_IMAGES = 42
+    'R21',
+    'R24',
+    'R33',
+    'R56'
+]
+
+NB_TRAIN_IMAGES = 461
+NB_VALID_IMAGES = 58
 
 ############################################################
 #  Configurations
@@ -131,8 +129,10 @@ class GlomerulusConfig(Config):
     RPN_TRAIN_ANCHORS_PER_IMAGE = 64
 
     # Image mean (RGB)
-    """A CALIBRER"""
-    MEAN_PIXEL = np.array([209.92, 203.35, 204.79])
+    ## V1
+    ## MEAN_PIXEL = np.array([209.92, 203.35, 204.79])
+    ## V2
+    MEAN_PIXEL = np.array([190.60, 175.39, 205.24])
 
 
     # If enabled, resizes instance masks to a smaller size to reduce
@@ -174,12 +174,12 @@ class GlomerulusDataset(utils.Dataset):
     def load_glomerulus(self, dataset_dir, subset):
         """Load a subset of the glomeruli dataset.
         dataset_dir: Root directory of the dataset
-        subset: Subset to load. Either one of train, val, test_xxx or run_yyy
-            * train : all images in "train" subset except ids starting with VAL_IMAGE_STARTS_WITH
+        subset: Subset to be loaded. Either train, val, test_xxx or run_yyy
+            * train : all images in the "train" subset except ids starting with VAL_IMAGE_STARTS_WITH
             * valid : images in "train" subset starting with VAL_IMAGE_STARTS_WITH
-            * other : all images in "other" subset
+            * other : all images in the other subset
         The 'run' folder is a plain folder containing images to run detection on
-        The other subset are to be organized in the following way (for perfomance tracking):
+        The 'other' subset are to be organized in the following way (for perfomance tracking):
             * one folder per image (named after the name of the image)
             * one subfolder 'images' containing the image with a .jpg format
             * one subfolder 'masks' containing them masks with a .png format
