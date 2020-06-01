@@ -4,6 +4,7 @@ This code is an adaptation of the [Matterport implementation of Mask RCNN](https
 
 ## Jupyter notebooks
 0. `prepare_training_data` : useful functions to prepare the train dataset
+0. `train val test split analysis` : guidelines for choosing validation and test sets
 1. `inspect_glomerulus_data` : useful functions to check the dataset content and the model parameters
 2. `train_glomerulus` : bash command and tensorboard analysis
 3. `inspect_glomerulus_model` : after training, useful functions to test, debug, and evaluate the model on the validation set
