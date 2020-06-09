@@ -2,7 +2,7 @@
 
 This repository is an Artificial Intelligence project aiming to segment [kidney glomeruli](https://en.wikipedia.org/wiki/Glomerulus_(kidney)) in histology images. It makes use of the [Mask R-CNN implementation by Matterport](https://github.com/matterport/Mask_RCNN).
 
-Performance as of 9th of April 2020 : AP ~ 0.75, Mask IoU ~ 0.88
+Performance as of 6th of June 2020 : AP ~ 0.75, Mask IoU ~ 0.88
 
 ![Example of segmented image](DataSamples/segmented_image.png)
 
@@ -53,15 +53,21 @@ Une fois les ROI générés, le logiciel est capable de calculer la surface du g
 
 Pour des raisons de confidentialité et de taille de stockage, le repository github ne présente qu'un échantillon de données (dossier Data/sample). L'ensemble des données est accessible aux contributeurs du projet sur un [drive google partagé](https://drive.google.com/open?id=1rmJG8g-bZpiiZyb6SJd3uqtqJOa-EQ9X).
 
-* Dossier Data/glomerulus/train (500 Mo):
-  * 200 images avec les fichiers .roi associés
+##### Volumétrie:
+  * taille : 1290 Mo
+  * volumétrie : 574 images avec les fichiers .roi associés
   * résolution 1920x1018  en général, quelquefois 1831x1058
+  * trois colorations : VEGF, PAS, IgG
+  * grossissement : x15 en majorité, x20 sur les PAS
 
+##### Répartition par type de marqueurs :
 
-* Dossier Data/glomerulus/test (175 Mo):
-  * 80 images
+  | marker|	en % de patients|	en % d'images|	en % de glomerulus|
+  |-|-|-|-|
+  |	VEGF|37.9%	|36.6%	|41.4%|
+  |	PAS	|36.8%	|40.8%	|33.2%|
+  |	IgG	|25.3%	|22.6%	|25.3%|
 
-A ce jour, le train dataset ne contient exclusivement que des colorations VEGF au grossissement x15. Il sera possible de récupérer des données plus diversifiées post-confinement.
 
 ## Project Definition
 
@@ -87,34 +93,60 @@ As a consequence, the performance metrics are defined as :
 
 ## Results Log
 
-### Version 0 : Confined, limited access to data
+#### V2 - 6th June 2020
+* Confinement is over, the full dataset is accessible=> 3 times more images, with VGEF, IgG and PAS markers
+* Dataset split into 80% train, 10% val, 10% test.
+* Split done by patient to avoid data leakage
 
-* Training dataset is composed of 200 VEGF x15 images.
-* Test dataset is composed of 15 IgG and CD68 x15 images
-  * warning : labelled by the programmer => not fully accurate
+|                | Train        | Valid       | Test V2.0  | Test V1;0  |
+|----------------|--------------|-------------|------------|------------|
+|#images         | 461          | 58          | 55         | *55*         |
+|#glomeruli      | 2936         | 359         | 348        | *348*        |
+|#undetected     | 74 (2.52%)   | 6 (1.67%)   |**1 (0.29%)**  | *9 (2.59%)*  |
+|#false positive | 243 (8.28%)  | 19 (5.29%)  | 25 (7.18%) | *24 (6.90%)* |
+|**#mean IoU on TP** |0.8802    | 0.7051      |**0.8830**  |*0.8914*      |
+|#mean AP        |0.7256        | 0.7213      | 0.7552     |*0.6588*     |
 
-#### V0.2 - 2020/04/09
-Major change : added augmenters scale and contrast
+NB : "Test V1" = performance of the previous model measured on the new test set
 
-|                | Train       | Valid       | Test x15|
+Comments:
+* High #undetected in Train set : mostly due to PAS X20. The problem seems to be the low contrast between the glomerulus and the backgournd + the zoom difference (x20 instead of the more common x15). One IgG image is corrupted (rois not aligned with the image)
+* Validation : all undetected come from PAS x20
+* Test : the only undetected comes form a VGEF - small and blurry glomerulus
+* this model is generally imprecise on masks
+* mean IoU is not fully reproducible and may oscillate +/- 10% (seemingly due to Gpu randomness)
+
+To do for next version:
+* correct or delete the corrupted IgG image
+* include contrast enhancement in data preparation
+* increase the mask size parameter
+
+#### V1 - 9th April 2020
+* Still Confined => same dataset
+* Major change in the model : added augmenters scale and contrast
+
+|                | Train       | Valid       | Test |
 |----------------|-------------|-------------|---------|
 |#images         | 161         | 39          | 15      |
 |#glomeruli      | 1161        | 277         | 106     |
 |#undetected     |2 (0.17%)    | 2 (0.72%)   | 11 (10.38%)  |
 |#false positive |118 (10.16%) | 19 (6.86%)  | 6 (5.66%)   |
-|**#mean IoU on TP** |**0.8761**       |**0.8852**     | 0.7256     |
+|**#mean IoU on TP** |**0.8761**       |**0.8852**     |**0.7256**     |
 |#mean AP        |0.7639       | 0.7571      | 0.5909     |
 
 Note : on Test, one image is responsible for 6 undetected
 
-#### V0.1 - 2020/03/23
-40 epoch (20 head + 20 full)
+#### V0 - 23rd March 2020
+* Confined, limited access to data
+* Training dataset is composed of 200 VEGF x15 images.
+* Test dataset is composed of 15 IgG and CD68 x15 images - **warning** : labelled by the programmer => not fully accurate
+* Model trained for 40 epoch (20 head + 20 full)
 
-|                | Train       | Valid       | Test x15|
+|                | Train       | Valid       | Test |
 |----------------|-------------|-------------|---------|
 |#images         | 161         | 39          | 15 |
 |#glomeruli      | 1161        | 277         | 106 |
 |#undetected     |1 (0.09%)    | 1 (0.36%)   | 8 (7.55%) |
 |#false positive |162 (13.95%) | 35 (12.64%) | 10 (9.43%) |
-|**#mean IoU on TP** |**0.6906**       | **0.8349**      | 0.6847 |
+|**#mean IoU on TP** |**0.6906**       | **0.8349**      | **0.6847** |
 |#mean AP        |0.7194       | 0.7070      | 0.5782 |
