@@ -98,7 +98,7 @@ As a consequence, the performance metrics are defined as :
 * Dataset split into 80% train, 10% val, 10% test.
 * Split done by patient to avoid data leakage
 
-|                | Train        | Valid       | Test V2.0  | Test V1;0  |
+|                | Train        | Valid       | Test V2.0  | Test V1.0  |
 |----------------|--------------|-------------|------------|------------|
 |#images         | 461          | 58          | 55         | *55*         |
 |#glomeruli      | 2936         | 359         | 348        | *348*        |
