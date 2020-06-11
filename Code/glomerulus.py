@@ -78,6 +78,8 @@ VAL_IMAGE_STARTS_WITH = [
 
 NB_TRAIN_IMAGES = 461
 NB_VALID_IMAGES = 58
+NB_EPOCHS_HEAD = 20
+NB_EPOCHS_FULL = 40
 
 ############################################################
 #  Configurations
@@ -89,7 +91,7 @@ class GlomerulusConfig(Config):
     NAME = "glomerulus"
 
     # Adjust depending on your GPU memory
-    IMAGES_PER_GPU = 2
+    IMAGES_PER_GPU = 1
     # A 12GB GPU can typically handle 2 images of 1024x1024px #
 
     # Number of classes (including background)
@@ -375,14 +377,14 @@ def train(model, dataset_dir, subset):
     print("Train network heads")
     model.train(dataset_train, dataset_val,
                 learning_rate=config.LEARNING_RATE,
-                epochs=20,
+                epochs=NB_EPOCHS_HEAD,
                 augmentation=augmentation,
                 layers='heads')
 
     print("Train all layers")
     model.train(dataset_train, dataset_val,
                 learning_rate=config.LEARNING_RATE,
-                epochs=50,
+                epochs=NB_EPOCHS_FULL,
                 augmentation=augmentation,
                 layers='all')
 

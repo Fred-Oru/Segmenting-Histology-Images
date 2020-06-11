@@ -2,7 +2,7 @@
 data/
 *coco.h5
 logs/
-# (ignore)*/
+(ignore)*/
 (ignore)*.*
 *.gslides
 
