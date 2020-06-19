@@ -91,7 +91,7 @@ class GlomerulusConfig(Config):
     NAME = "glomerulus"
 
     # Adjust depending on your GPU memory
-    IMAGES_PER_GPU = 1
+    IMAGES_PER_GPU = 2
     # A 12GB GPU can typically handle 2 images of 1024x1024px #
 
     # Number of classes (including background)
@@ -117,7 +117,7 @@ class GlomerulusConfig(Config):
     IMAGE_MIN_SCALE = 0
 
     # Length of square anchor side in pixels
-    RPN_ANCHOR_SCALES = (32, 64, 128, 256, 512)
+    RPN_ANCHOR_SCALES = (64, 128, 256, 512,1024)
 
     # ROIs kept after non-maximum supression (training and inference)
     POST_NMS_ROIS_TRAINING = 2000
