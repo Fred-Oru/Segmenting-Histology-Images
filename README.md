@@ -2,7 +2,8 @@
 
 This repository is an Artificial Intelligence project aiming to segment [kidney glomeruli](https://en.wikipedia.org/wiki/Glomerulus_(kidney)) in histology images. It makes use of the [Mask R-CNN implementation by Matterport](https://github.com/matterport/Mask_RCNN).
 
-Performance as of 6th of June 2020 : AP ~ 0.75, Mask IoU ~ 0.88
+Performance as of 19th of June 2020 : Mask IoU ~ 0.879  
+(Mask IoU is defined as Intersection over Union between the generated masks and ground truth masks. A 0.88 Mask IoU basically means that the generated mask is 88% accurate)
 
 ![Example of segmented image](DataSamples/segmented_image.png)
 
@@ -93,19 +94,54 @@ As a consequence, the performance metrics are defined as :
 
 ## Results Log
 
-#### V2 - 6th June 2020
+### V2.2 - June 19th 2020
+* Major change : RPN_ANCHOR_SCALES = (64, 128, 256, 512,1024)  
+(anchor scale twice to better manage small and large glomerulus)
+
+|                | Train        | Valid       | Test V2.1  |
+|----------------|--------------|-------------|------------|
+|#images         | 461          | 58          | 55         |
+|#glomeruli      | 2936         | 359         | 348        |
+|#undetected     | 23 (0.79%)   | 3 (0.84%)   |**2 (0.57%)** |
+|#false positive | 362 (12.36%)  | 30 (8.36%)  | 43 (12.36%) |
+|**#mean IoU on TP** |0.880    | 0.875      |**0.881**  |
+|#mean AP        |0.7348        | 0.7303      | 0.7445     |
+
+Comments:
+* much better level of detection (>99% accuracy)
+* high number of false positive (but not a problem)
+* mIOU is improved and very similar on each set
+
+### V2.1 - June 13th 2020
+* MASK_SHAPE scaled up to (56,56) [makes masks more precise]
+
+|                | Train        | Valid       | Test V2.1  |
+|----------------|--------------|-------------|------------|
+|#images         | 461          | 58          | 55         |
+|#glomeruli      | 2936         | 359         | 348        |
+|#undetected     | 54 (1.84%)   | 4 (1.11%)   |**8 (2.3%)** |
+|#false positive | 356 (12.13%)  | 29 (8.08%)  | 43 (12.36%) |
+|**#mean IoU on TP** |0.863    | 0.858      |**0.867**  |
+|#mean AP        |0.736        | 0.730      | 0.745     |
+
+Comments:
+* slight improvement on IoU and detection
+* high number of false positive
+
+#### V2.0 - June 6th 2020
 * Confinement is over, the full dataset is accessible=> 3 times more images, with VGEF, IgG and PAS markers
 * Dataset split into 80% train, 10% val, 10% test.
 * Split done by patient to avoid data leakage
+* Still a lot of undetected
 
-|                | Train        | Valid       | Test V2.0  | Test V1.0  |
-|----------------|--------------|-------------|------------|------------|
-|#images         | 461          | 58          | 55         | *55*         |
-|#glomeruli      | 2936         | 359         | 348        | *348*        |
-|#undetected     | 74 (2.52%)   | 6 (1.67%)   |**1 (0.29%)**  | *9 (2.59%)*  |
-|#false positive | 243 (8.28%)  | 19 (5.29%)  | 25 (7.18%) | *24 (6.90%)* |
-|**#mean IoU on TP** |0.8802    | 0.7051      |**0.8830**  |*0.8914*      |
-|#mean AP        |0.7256        | 0.7213      | 0.7552     |*0.6588*     |
+|                | Train        | Valid       | Test V2.0  |
+|----------------|--------------|-------------|------------|
+|#images         | 461          | 58          | 55         |
+|#glomeruli      | 2936         | 359         | 348        |
+|#undetected     | 74 (2.52%)   | 6 (1.67%)   |**1 (0.29%)**  |
+|#false positive | 243 (8.28%)  | 19 (5.29%)  | 25 (7.18%) |
+|**#mean IoU on TP** |0.856    | 0.851      |**0.861**  |
+|#mean AP        |0.727        | 0.720      | 0.756     |
 
 NB : "Test V1" = performance of the previous model measured on the new test set
 
@@ -121,7 +157,7 @@ To do for next version:
 * include contrast enhancement in data preparation
 * increase the mask size parameter
 
-#### V1 - 9th April 2020
+#### V1 - April 9th 2020
 * Still Confined => same dataset
 * Major change in the model : added augmenters scale and contrast
 
@@ -136,10 +172,11 @@ To do for next version:
 
 Note : on Test, one image is responsible for 6 undetected
 
-#### V0 - 23rd March 2020
+#### V0 - March 23rd 2020
 * Confined, limited access to data
 * Training dataset is composed of 200 VEGF x15 images.
-* Test dataset is composed of 15 IgG and CD68 x15 images - **warning** : labelled by the programmer => not fully accurate
+* Test dataset is composed of 15 IgG and CD68 x15 images -  
+ **warning** : labelled by the programmer => not fully accurate
 * Model trained for 40 epoch (20 head + 20 full)
 
 |                | Train       | Valid       | Test |
