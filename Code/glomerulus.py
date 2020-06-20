@@ -183,7 +183,7 @@ class GlomerulusDataset(utils.Dataset):
         The 'run' folder is a plain folder containing images to run detection on
         The 'other' subset are to be organized in the following way (for perfomance tracking):
             * one folder per image (named after the name of the image)
-            * one subfolder 'images' containing the image with a .jpg format
+            * one subfolder 'images' containing the image with a .jpg or .tif format
             * one subfolder 'masks' containing them masks with a .png format
             * one subfolder 'rois' containing the rois with a .roi format (not used)
         The 'result' folder will be organized as the "train" folder, with one folder
@@ -206,7 +206,13 @@ class GlomerulusDataset(utils.Dataset):
             image_ids = val_ids if subset == "val" else non_val_ids
         else: # run_yyy folder
             image_ids = next(os.walk(dataset_dir))[2] # files
-            image_ids = [id[:-4] for id in image_ids if id.endswith('.jpg')]
+            image_ids = [id for id in image_ids
+                        if (
+                            (id.endswith('.jpg') or id.endswith('.tif'))
+                            and ~id.startswith('.') # to avoid hidden files
+                            )
+                        ]
+            # warning : here image_ids contain the format extension to keep track of it
 
         # Add images
         for image_id in image_ids:
@@ -214,9 +220,11 @@ class GlomerulusDataset(utils.Dataset):
             if ((subset_dir == "train") or (subset.startswith("test"))):
                 img_dir = os.path.join(dataset_dir, image_id)
                 img_path = os.path.join(img_dir, "images/{}.jpg".format(image_id))
+                # NB : all training images are supposed to be JPG
             else:
                 img_dir = dataset_dir
-                img_path = os.path.join(img_dir, "{}.jpg".format(image_id))
+                img_path = os.path.join(img_dir, image_id)
+                # images can be .jpg or .tif
 
             self.add_image(
                 "glomerulus",
