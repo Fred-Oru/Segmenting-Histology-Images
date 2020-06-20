@@ -209,7 +209,7 @@ class GlomerulusDataset(utils.Dataset):
             image_ids = [id for id in image_ids
                         if (
                             (id.endswith('.jpg') or id.endswith('.tif'))
-                            and ~id.startswith('.') # to avoid hidden files
+                            and not id.startswith('.') # to avoid hidden files
                             )
                         ]
             # warning : here image_ids contain the format extension to keep track of it
@@ -225,6 +225,7 @@ class GlomerulusDataset(utils.Dataset):
                 img_dir = dataset_dir
                 img_path = os.path.join(img_dir, image_id)
                 # images can be .jpg or .tif
+                image_id = image_id[:-4] 
 
             self.add_image(
                 "glomerulus",
