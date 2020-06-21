@@ -225,7 +225,7 @@ class GlomerulusDataset(utils.Dataset):
                 img_dir = dataset_dir
                 img_path = os.path.join(img_dir, image_id)
                 # images can be .jpg or .tif
-                image_id = image_id[:-4] 
+                image_id = image_id[:-4]
 
             self.add_image(
                 "glomerulus",
@@ -403,15 +403,18 @@ def train(model, dataset_dir, subset):
 
 def detect(model, dataset_dir, subset):
     """Run detection on images in the given directory and saves results in RESULT_DIR
+    NB : the subset is supposed to be a folder containing the images, no subfolder
     The RESULT_DIR folder is organized in the following way :
-        * one folder per image (named after the name of the image)
-        * one subfolder 'images' containing the image with a .jpg format
-        * one subfolder 'masks' containing them masks with a .png format
-        * one subfolder 'rois' containing the rois with a .roi format (not used)
+        * one folder (submit_dir below) named subset_detect_DATE&TIME containing :
+            * all original images in subset
+            * one IMG_ID_roi.zip for each images in subset (zip containg detected countours in .roi format)
+            * one Segmented_IMG_ID.png for each images in subset (image superposed with the detected countours)
     """
 
     assert subset not in ['train','val'], "trying to run detection on train or val set => abort"
     print("Running on {}".format(dataset_dir))
+
+    assert "/" not in subset, "subset cannot contain hierarchy of folders"
 
     # Create results directory
     if not os.path.exists(RESULTS_DIR):
@@ -440,43 +443,33 @@ def detect(model, dataset_dir, subset):
             show_bbox=False, show_mask=False,
             title="Predictions")
         try:
-            plt.savefig("{}/{}_result.png".format(submit_dir, img_name ), bbox_inches='tight')
+            plt.savefig("{}/Segmented_{}.png".format(submit_dir, img_name ), bbox_inches='tight')
         except:
             pass
-        # creation result folder architecture
 
-        subset_dir = os.path.join(dataset_dir,subset)
-        img_dir = os.path.join(submit_dir,img_name)
-        os.makedirs(img_dir)
-        img_subdir = os.path.join(img_dir,"images")
-        os.makedirs(img_subdir)
-        shutil.copyfile(dataset.image_info[image_id]["path"], os.path.join(img_subdir,img_name+".jpg"))
+        # copy the original image
+        img_path = dataset.image_info[image_id]["path"]
+        img_name = os.path.basename(img_path)
+        img_id = img_name[:-4]
+        shutil.copyfile(img_path, os.path.join(img_subdir,img_name))
 
-        mask_dir = os.path.join(img_dir,"masks")
-        os.makedirs(mask_dir)
-
-        roi_dir = os.path.join(img_dir,"rois")
-        os.makedirs(roi_dir)
-
-        # save masks and rois
+        # generate masks and extract rois
         for i in range(r['masks'].shape[2]): # shape = (h)x(w)x(number of masks)
             mask = (r['masks'][:,:,i]*255).astype('uint8')
-            mask_name = "{}-{}".format(img_name,i+1)
-            skimage.io.imsave("{}/{}.png".format(mask_dir, mask_name),mask)
-
-            # extract roi from mask
             cnt = contour_from_mask(mask)
             roi = roi_from_contour(mask_name+'.roi',cnt)
             bytes = bytes_from_roi(roi)
-            with open(os.path.join(roi_dir,mask_name+'.roi'), "wb") as file:
+            with open(os.path.join(submit_dir,mask_name+'.roi'), "wb") as file:
                 file.write(bytes)
 
-        # Create a ZipFile Object
-        with zipfile.ZipFile(os.path.join(img_subdir,img_name + '_roi.zip'), 'w') as zipObj:
+        # Zip rois and delete original files
+        with zipfile.ZipFile(os.path.join(submit_dir,img_id + '_roi.zip'), 'w') as zipObj:
             # Add multiple files to the zip
             for file in next(os.walk(roi_dir))[2]:
                if file.endswith('.roi'):
                    zipObj.write(os.path.join(roi_dir,file),arcname=file)
+                   os.remove(os.path.join(submit_dir,file))
+
 
 ###########################################################
 #  Command Line
