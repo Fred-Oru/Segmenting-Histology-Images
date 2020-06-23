@@ -1,46 +1,46 @@
 ## Other Research
 
-Ce dossier contient les autres articles de recherche étudiés avant de faire le choix de Mask RCNN. Ils pourraient être utiles dans des phases ultérieures d'optimisation.
+This folder contains the other research papers studied before choosing Mask RCNN. They could be useful in later phases of optimization.
 
 
 ### Segmentation of Glomeruli using DL (2019)
 
-Les auteurs passent un CNN avec une fenêtre glissante 300x300 sur des images 2560x1920 pour prédire pixel par pixel la chance d'appartenir à un glomérule (c'est un modèle plus simple que le Mask RCNN mais probablement très long à exécuter ...)
+The authors run a CNN with a 300x300 sliding window on 2560x1920 images to predict pixel by pixel the chance of belonging to a glomerulus (this is a simpler model than the RCNN Mask but probably very long to run ...)
 
-Ils partent de 250 images d'histologie 2560x1920x3 qu'ils découpent en patch de 300x300x3 avec un stride de 20 pixel pour nourrir un CNN.
+They start from 250 2560x1920x3 histology images that they cut into a 300x300x3 patch with a 20 pixel stride to feed a CNN.
 
-Chaque patch est labellisé (NPS)'glomérule sain ou presque' ou (GS) 'glomérule pathologique' ou 'pas de glomérule'.
+Each patch is labelled (NPS) 'healthy or almost healthy glomerulus' or (GS) 'pathological glomerulus' or 'no glomerulus'.
 
-CNN utilisé : Google Inception V3 pretrained sur Imagenet, ré-Entraîné pour reconnaître l'une des trois classes => 90-95% d'accuracy
+CNN used: Google Inception V3 pretrained on Imagenet, re-trained to recognize one of the three classes => 90-95% accuracy
 
-Train / valid set : ils ont mis 70% des patients dans un jeu de train, et 30% dans le valid, et *ensuite* ils ont fait les cropping. Il est important que des images de patients ne soient pas à la fois dans le train et le test
+Train / valid set: they put 70% of the patients in a train set, and 30% in the valid, and *then* they did the cropping. It is important that images of patients are not in both the train and the test.
 
-Ils ont fait une cross validation à 4 fold pour bien estimer la capacité du modèle. Ils ont fait de la data augmentation (copies avec différentes white noise)
+They did a 4-fold cross validation to properly estimate the model's capacity. They did data augmentation (copies with different white noise).
 
 ### Semantic Edge detection
 
-Cet article pourrait être intéressant pour faire un pré-traitement des images en éliminant les couleurs pour ne garder que les bords avant de passer dans Mask R-CNN
+This article could be interesting to pre-process the images by eliminating the colors to keep only the edges before passing in Mask R-CNN
 
-Il s'agit d'un détecteur de bord qui s'appuie sur le modèle Casenet : le principe est d'utiliser un Resnet et d'extraire les features à plusieurs endroits du réseaux pour en faire une convolution à part et en déduire les bords. Dans l'article ils vont un peu plus loin en entraînant différents les couches profondes et les couches hautes.
+It is an edge detector based on the Casenet model: the principle is to use a Resnet and extract the features at different levels in the network to make a separate convolution and deduce the edges. In the article they go a bit further by training different deep and high layers.
 
 ### Segmentation Classification HoVer-Net.pdf
 
-La complexité de l'article tient à leur problématique spécifique de l'occlusion des noyaux : leur problème est de bien séparer les bords des noyaux, même quand ils sont superposés. Mais pour notre cas, il est intéressant de regarder la Fig2. branche NP : ils arrivent à faire un masque de segmentation en utilisant
-* un Resnet50
-* une suite de upsampling / convolution / dense layer
-* des skip connections (pas précisé où)
+The complexity of the article is due to their specific problem of cell nucleus occlusion: their problem is to separate the edges of the nuclei, even when they are superimposed. That being said, in our case, it is interesting to look at Fig2. NP branch: they manage to make a segmentation mask by using
+* a Resnet50
+* an upsampling/convolution/dense layer sequence
+* skip connections (not specified where)
 
-Il serait peut être possible d'utiliser cette structure, moins lourde qu'un Mask RCNN, pour résoudre notre problème
+It might be possible to use this structure, less heavy than an RCNN Mask, to solve our problem.
+
 
 code : https://github.com/vqdang/hover_net
-tensorflow V1, pas simple à suivre ...
 
 ### Nature Deep Learning Histology
 
-Titre original : Automated acquisition of explainable knowledge from unannotated histopathology images
+Original Title: Automated acquisition of explainable knowledge from unannotated histopathology images
 
-Cet article n'est pas directement en phase avec notre problématique. Ils font une annotation automatique des zones pathologiques d'une image histologique, sachant si l'image correspond à un patient sain ou malade.
+This article is not directly in line with our problem. They classify histological images as healthy or sick.
 
-Ce qui est intéressant est qu'ils utilisent un auto-encodeur sur les images de haute résolution pour les réduire à 100 features numériques, sur lequels ils appliquent un apprentissage supervisé classique.
+What is interesting is that they use an auto-encoder on the high-resolution images to reduce them to 100 digital features, on which they apply classical supervised learning.
 
-Leçon à retenir : l'auto-encoding pourrait être un moyen de réduire la dimensionnalité des images tout en gardant les éléments importants. Peut être peut on forcer l'auto encodeur à ne conserver que les silhouettes de glomérules ?
+Lesson learned: Auto-encoding could be a way to reduce the dimensionality of the images while keeping the important features. Maybe we can force the auto-encoder to keep only the glomerular silhouettes?

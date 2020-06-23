@@ -1,10 +1,11 @@
 ## Segmentation with Mask RCNN
 
-A l'issue d'une phase de recherche documentaire, nous avons choisi d'implémenter le modèle Mask R-CNN.
+After searcing the literature on segmentation techniques, we chose to implement the Mask R-CNN model.
 
-Les articles de recherche de référence sur ce modèle sont regroupés dans le dossier "Reference Research Papers". Les autres articles étudiés, écartés, mais intéressants, sont dans le dossier 'Other Research'.
+The reference research papers on this model are gathered in the "Reference Research Papers" folder. The other articles studied, discarded but interesting, are in the 'Other Research' folder.
 
-Ce document donne des éléments de compréhension générale moins formels.
+This document gives less formal elements of general understanding.
+
 
 ### Good lectures about segmentation techniques
 
