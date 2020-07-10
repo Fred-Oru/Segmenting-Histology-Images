@@ -21,6 +21,7 @@ import skimage.transform
 import urllib.request
 import shutil
 import warnings
+from PIL import Image
 from distutils.version import LooseVersion
 
 # URL from which to download the latest COCO trained weights
@@ -101,7 +102,7 @@ def compute_overlaps_masks(masks1, masks2):
     """Computes IoU overlaps between two sets of masks.
     masks1, masks2: [Height, Width, instances]
     """
-    
+
     # If either set of masks is empty return empty result
     if masks1.shape[-1] == 0 or masks2.shape[-1] == 0:
         return np.zeros((masks1.shape[-1], masks2.shape[-1]))
@@ -356,7 +357,9 @@ class Dataset(object):
         """Load the specified image and return a [H,W,3] Numpy array.
         """
         # Load image
-        image = skimage.io.imread(self.image_info[image_id]['path'])
+        # V2.3 change : use PIL for reading .tif as well as .jpg
+        # image = skimage.io.imread(self.image_info[image_id]['path'])
+        image = np.array(Image.open(self.image_info[image_id]['path']))
         # If grayscale. Convert to RGB for consistency.
         if image.ndim != 3:
             image = skimage.color.gray2rgb(image)
@@ -757,7 +760,7 @@ def compute_ap_range(gt_box, gt_class_id, gt_mask,
     """Compute AP over a range or IoU thresholds. Default range is 0.5-0.95."""
     # Default is 0.5 to 0.95 with increments of 0.05
     iou_thresholds = iou_thresholds or np.arange(0.5, 1.0, 0.05)
-    
+
     # Compute AP over range of IoU thresholds
     AP = []
     for iou_threshold in iou_thresholds:
