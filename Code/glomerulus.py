@@ -183,7 +183,7 @@ class GlomerulusDataset(utils.Dataset):
         The 'run' folder is a plain folder containing images to run detection on
         The 'other' subset are to be organized in the following way (for perfomance tracking):
             * one folder per image (named after the name of the image)
-            * one subfolder 'images' containing the image with a .jpg format
+            * one subfolder 'images' containing the image with a .jpg or .tif format
             * one subfolder 'masks' containing them masks with a .png format
             * one subfolder 'rois' containing the rois with a .roi format (not used)
         The 'result' folder will be organized as the "train" folder, with one folder
@@ -206,7 +206,13 @@ class GlomerulusDataset(utils.Dataset):
             image_ids = val_ids if subset == "val" else non_val_ids
         else: # run_yyy folder
             image_ids = next(os.walk(dataset_dir))[2] # files
-            image_ids = [id[:-4] for id in image_ids if id.endswith('.jpg')]
+            image_ids = [id for id in image_ids
+                        if (
+                            (id.endswith('.jpg') or id.endswith('.tif'))
+                            and not id.startswith('.') # to avoid hidden files
+                            )
+                        ]
+            # warning : here image_ids contain the format extension to keep track of it
 
         # Add images
         for image_id in image_ids:
@@ -214,9 +220,12 @@ class GlomerulusDataset(utils.Dataset):
             if ((subset_dir == "train") or (subset.startswith("test"))):
                 img_dir = os.path.join(dataset_dir, image_id)
                 img_path = os.path.join(img_dir, "images/{}.jpg".format(image_id))
+                # NB : all training images are supposed to be JPG
             else:
                 img_dir = dataset_dir
-                img_path = os.path.join(img_dir, "{}.jpg".format(image_id))
+                img_path = os.path.join(img_dir, image_id)
+                # images can be .jpg or .tif
+                image_id = image_id[:-4]
 
             self.add_image(
                 "glomerulus",
@@ -394,80 +403,87 @@ def train(model, dataset_dir, subset):
 
 def detect(model, dataset_dir, subset):
     """Run detection on images in the given directory and saves results in RESULT_DIR
+    NB : 'subset' can be a single folder containing images, or a folder of single folders
     The RESULT_DIR folder is organized in the following way :
-        * one folder per image (named after the name of the image)
-        * one subfolder 'images' containing the image with a .jpg format
-        * one subfolder 'masks' containing them masks with a .png format
-        * one subfolder 'rois' containing the rois with a .roi format (not used)
+        * one folder DATE&TIME containing : 
+            one folder per subfolder in subset, and in this folder : 
+                * all original images in subset subfolder
+                * one IMG_ID_roi.zip for each images in subset subfolder (zip containg detected countours in .roi format)
+                * one Segmented_IMG_ID.png for each images in subset subfolder (image superposed with countours)
     """
 
     assert subset not in ['train','val'], "trying to run detection on train or val set => abort"
     print("Running on {}".format(dataset_dir))
-
-    # Create results directory
+    
+    assert "/" not in subset, "subset must be a folder, not a path. Change dataset path in consequence"
+     
+    # Create Timestamped results directory
     if not os.path.exists(RESULTS_DIR):
         os.makedirs(RESULTS_DIR)
-    submit_dir = "{}_detect_{:%Y%m%dT%H%M%S}".format(subset,datetime.datetime.now())
-    submit_dir = os.path.join(RESULTS_DIR, submit_dir)
-    os.makedirs(submit_dir)
+    timestamped_dir = "detect_{:%Y%m%dT%H%M%S}".format(datetime.datetime.now())
+    timestamped_dir = os.path.join(RESULTS_DIR, timestamped_dir)
+    os.makedirs(timestamped_dir)
+    
+    # create list of all subfolders of 'subset' (might be subset itself if it's a single folder)
+    subfolders = next(os.walk(os.path.join(dataset_dir,subset)))[1]
+    if subfolders:
+        dataset_dir = os.path.join(dataset_dir,subset)
+    else:
+        subfolders = [subset]
+        
+    for subfolder in subfolders:    
+        # create subfolder in the result folder
+        submit_dir = os.path.join(timestamped_dir, subfolder)
+        os.makedirs(submit_dir)
+        # Read dataset
+        dataset = GlomerulusDataset()
+        dataset.load_glomerulus(dataset_dir, subfolder)
+        dataset.prepare()
+        # Load over images
 
-    # Read dataset
-    dataset = GlomerulusDataset()
-    dataset.load_glomerulus(dataset_dir, subset)
-    dataset.prepare()
-    # Load over images
+        for image_id in dataset.image_ids:
+            # Load image 
+            image = dataset.load_image(image_id)
+            img_name = dataset.image_info[image_id]["id"]
 
-    for image_id in dataset.image_ids:
-        # Load image and run detection
-        image = dataset.load_image(image_id)
-        img_name = dataset.image_info[image_id]["id"]
-        # Detect objects
-        r = model.detect([image], verbose=0)[0]
+            # copy the original image
+            img_path = dataset.image_info[image_id]["path"]
+            img_name = os.path.basename(img_path)
+            img_id = img_name[:-4]
+            shutil.copyfile(img_path, os.path.join(submit_dir,img_name))
+            
+            # Detect objects
+            r = model.detect([image], verbose=0)[0]
 
-        # Save image with masks
-        visualize.display_instances(
-            image, r['rois'], r['masks'], r['class_ids'],
-            dataset.class_names, r['scores'],
-            show_bbox=False, show_mask=False,
-            title="Predictions")
-        try:
-            plt.savefig("{}/{}_result.png".format(submit_dir, img_name ), bbox_inches='tight')
-        except:
-            pass
-        # creation result folder architecture
+            # Save image with masks
+            visualize.display_instances(
+                image, r['rois'], r['masks'], r['class_ids'],
+                dataset.class_names, r['scores'],
+                show_bbox=False, show_mask=False,
+                title="Predictions")
+            try:
+                plt.savefig("{}/Segmented_{}.png".format(submit_dir, img_name ), bbox_inches='tight')
+            except:
+                pass
 
-        subset_dir = os.path.join(dataset_dir,subset)
-        img_dir = os.path.join(submit_dir,img_name)
-        os.makedirs(img_dir)
-        img_subdir = os.path.join(img_dir,"images")
-        os.makedirs(img_subdir)
-        shutil.copyfile(dataset.image_info[image_id]["path"], os.path.join(img_subdir,img_name+".jpg"))
+            # generate masks and extract rois
+            for i in range(r['masks'].shape[2]): # shape = (h)x(w)x(number of masks)
+                mask = (r['masks'][:,:,i]*255).astype('uint8')
+                cnt = contour_from_mask(mask)
+                mask_name = "{}-{}".format(img_id,i+1)
+                roi = roi_from_contour(mask_name+'.roi',cnt)
+                bytes = bytes_from_roi(roi)
+                with open(os.path.join(submit_dir,mask_name+'.roi'), "wb") as file:
+                    file.write(bytes)
 
-        mask_dir = os.path.join(img_dir,"masks")
-        os.makedirs(mask_dir)
+            # Zip rois and delete original files
+            with zipfile.ZipFile(os.path.join(submit_dir,img_id + '_roi.zip'), 'w') as zipObj:
+                # Add multiple files to the zip
+                for file in next(os.walk(submit_dir))[2]:
+                   if file.endswith('.roi'):
+                       zipObj.write(os.path.join(submit_dir,file),arcname=file)
+                       os.remove(os.path.join(submit_dir,file))
 
-        roi_dir = os.path.join(img_dir,"rois")
-        os.makedirs(roi_dir)
-
-        # save masks and rois
-        for i in range(r['masks'].shape[2]): # shape = (h)x(w)x(number of masks)
-            mask = (r['masks'][:,:,i]*255).astype('uint8')
-            mask_name = "{}-{}".format(img_name,i+1)
-            skimage.io.imsave("{}/{}.png".format(mask_dir, mask_name),mask)
-
-            # extract roi from mask
-            cnt = contour_from_mask(mask)
-            roi = roi_from_contour(mask_name+'.roi',cnt)
-            bytes = bytes_from_roi(roi)
-            with open(os.path.join(roi_dir,mask_name+'.roi'), "wb") as file:
-                file.write(bytes)
-
-        # Create a ZipFile Object
-        with zipfile.ZipFile(os.path.join(img_subdir,img_name + '_roi.zip'), 'w') as zipObj:
-            # Add multiple files to the zip
-            for file in next(os.walk(roi_dir))[2]:
-               if file.endswith('.roi'):
-                   zipObj.write(os.path.join(roi_dir,file),arcname=file)
 
 ###########################################################
 #  Command Line
