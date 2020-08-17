@@ -76,7 +76,7 @@ VAL_IMAGE_STARTS_WITH = [
     'R56'
 ]
 
-NB_TRAIN_IMAGES = 461
+NB_TRAIN_IMAGES = 479
 NB_VALID_IMAGES = 58
 NB_EPOCHS_HEAD = 20
 NB_EPOCHS_FULL = 40
@@ -407,8 +407,8 @@ def detect(model, dataset_dir, subset):
     """Run detection on images in the given directory and saves results in RESULT_DIR
     NB : 'subset' can be a single folder containing images, or a folder of single folders
     The RESULT_DIR folder is organized in the following way :
-        * one folder DATE&TIME containing : 
-            one folder per subfolder in subset, and in this folder : 
+        * one folder DATE&TIME containing :
+            one folder per subfolder in subset, and in this folder :
                 * all original images in subset subfolder
                 * one IMG_ID_roi.zip for each images in subset subfolder (zip containg detected countours in .roi format)
                 * one Segmented_IMG_ID.png for each images in subset subfolder (image superposed with countours)
@@ -416,24 +416,24 @@ def detect(model, dataset_dir, subset):
 
     assert subset not in ['train','val'], "trying to run detection on train or val set => abort"
     print("Running on {}".format(dataset_dir))
-    
+
     assert "/" not in subset, "subset must be a folder, not a path. Change dataset path in consequence"
-     
+
     # Create Timestamped results directory
     if not os.path.exists(RESULTS_DIR):
         os.makedirs(RESULTS_DIR)
     timestamped_dir = "detect_{:%Y%m%dT%H%M%S}".format(datetime.datetime.now())
     timestamped_dir = os.path.join(RESULTS_DIR, timestamped_dir)
     os.makedirs(timestamped_dir)
-    
+
     # create list of all subfolders of 'subset' (might be subset itself if it's a single folder)
     subfolders = next(os.walk(os.path.join(dataset_dir,subset)))[1]
     if subfolders:
         dataset_dir = os.path.join(dataset_dir,subset)
     else:
         subfolders = [subset]
-        
-    for subfolder in subfolders:    
+
+    for subfolder in subfolders:
         # create subfolder in the result folder
         submit_dir = os.path.join(timestamped_dir, subfolder)
         os.makedirs(submit_dir)
@@ -444,7 +444,7 @@ def detect(model, dataset_dir, subset):
         # Load over images
 
         for image_id in dataset.image_ids:
-            # Load image 
+            # Load image
             image = dataset.load_image(image_id)
             img_name = dataset.image_info[image_id]["id"]
 
@@ -453,7 +453,7 @@ def detect(model, dataset_dir, subset):
             img_name = os.path.basename(img_path)
             img_id = img_name[:-4]
             shutil.copyfile(img_path, os.path.join(submit_dir,img_name))
-            
+
             # Detect objects
             r = model.detect([image], verbose=0)[0]
 
