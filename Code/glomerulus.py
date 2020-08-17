@@ -219,8 +219,10 @@ class GlomerulusDataset(utils.Dataset):
 
             if ((subset_dir == "train") or (subset.startswith("test"))):
                 img_dir = os.path.join(dataset_dir, image_id)
-                img_path = os.path.join(img_dir, "images/{}.jpg".format(image_id))
-                # NB : all training images are supposed to be JPG
+                # NB : since V3, training images can have TIF or JPG format, so we have to find the full name of img
+                images_dir = os.path.join(img_dir, 'images')
+                img_full_name = next(os.walk(images_dir))[2][0]
+                img_path = os.path.join(images_dir, img_full_name)
             else:
                 img_dir = dataset_dir
                 img_path = os.path.join(img_dir, image_id)
