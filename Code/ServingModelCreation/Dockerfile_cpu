@@ -1,0 +1,2 @@
+FROM tensorflow/serving:latest
+COPY TFS_models/* /models/
