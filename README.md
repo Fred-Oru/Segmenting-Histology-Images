@@ -1,7 +1,11 @@
 # Glomeruli Segmentation in Histology images
 
-This repository is an Artificial Intelligence project aiming to segment [kidney glomeruli](https://en.wikipedia.org/wiki/Glomerulus_(kidney)) in histology images. It makes use of the [Mask R-CNN implementation by Matterport](https://github.com/matterport/Mask_RCNN).  Performance as of 19th of June 2020 : **Mask IoU ~ 0.879**  
-*(Mask IoU is defined as Intersection over Union between the generated masks and ground truth masks. A 0.88 Mask IoU basically means that the generated mask is 88% accurate)*
+This repository is an Artificial Intelligence project aiming to segment [kidney glomeruli](https://en.wikipedia.org/wiki/Glomerulus_(kidney)) in histology images.   
+It makes use of the [Mask R-CNN implementation by Matterport](https://github.com/matterport/Mask_RCNN).  
+
+The trained model is used since July 2020 by some biologists at University Paris Diderot in Paris. It segments glomerulus at a speed of 2.3 seconds per image instead of 10 minutes for a human biologist. The performance as of August 2020 is **Mask IoU* = 0.894**. The margin of error has no significant effect on surface measurement that the biologist have to perform.
+
+(** Mask IoU is defined as Intersection over Union between the generated masks and ground truth masks. A 0.88 Mask IoU basically means that the generated mask is 88% accurate)*
 
 ![Example of segmented image](DataSamples/segmented_image.png)
 
@@ -25,7 +29,7 @@ Biological researchers study the effects of a pathology on kidney [glomeruli](ht
 * apply a colour threshold to keep only the marked area in dark brown,
 * measure the marked area and the total area of the glomeruli with the software.
 
-The most tedious and time-consuming operation is the manual delineation of the glomeruli. The objective of this project is to train an artificial intelligence to automatically segment  glomeruli in a kidney histological image.
+The most tedious and time-consuming operation is the manual delineation of the glomeruli. The objective of this project was to train an artificial intelligence to automatically segment  glomeruli in a kidney histological image.
 
 ## Data specifications
 
@@ -52,8 +56,8 @@ The objective of our AI is to process zoom images of any magnification size and 
 For reasons of confidentiality and storage size, the github repository presents only a sample of the data (Data/sample folder). The full data set is accessible to the project contributors on a [shared google drive](https://drive.google.com/open?id=1rmJG8g-bZpiiZyb6SJd3uqtqJOa-EQ9X).
 
 ##### Volumetry:
-  * size: 1290 MB
-  * volumetry: 574 images with associated .roi files
+  * size: 1355 MB
+  * volumetry: 603 images with associated .roi files
   * resolution: usually 1920x1018 sometimes 1831x1058
   * three colors: VEGF, PAS, IgG
   * magnification: x15 in the majority, x20 on PSAs
@@ -65,8 +69,6 @@ For reasons of confidentiality and storage size, the github repository presents 
   |	VEGF|37.9%	|36.6%	|41.4%|
   |	PAS	|36.8%	|40.8%	|33.2%|
   |	IgG	|25.3%	|22.6%	|25.3%|
-
-
 
 
 ## Performance Metrics
@@ -85,6 +87,36 @@ As a consequence, the performance metrics are defined as :
 
 
 ## Results Log
+
+#### V3.0 - August 2020
+
+I trained the model on the previous train set augmented with 29 images that a biologist corrected in the previous run. Along the way, I discovered that the optimal convergence curve was was obtained by training the head of the network for 10 epochs and the full network for 25 epochs.
+
+On the old dataset, V3 is generally performing worse than V2 : there is much more undetected glomeruli which is bad (90 instead of 23 on train set, 7 instead of 2 or 3 on valid and test set). However, it's probably something that could be corrected by fine tuning the detection threshold and on the other side, there wa much less False Positive, which is good.
+
+On the new test set, V3 is **much better** on the new test data :
+* both models have the same detection success
+*	v3 makes much less False Positives (2 instead of 6 for V2)
+* mIou v3 = 0,894 whereas v2 = 0,84
+
+The biologists are very happy with results : the model processed 667 images in 25 minutes (2.3 seconds per image instead of 10 minutes on average for a human) and they just had to discard some false positives (no need to correct any segmentation)
+
+#### V2.3 - June-July 2020
+First use of the model in production.  
+
+The model is the same as V2.2, the code was just modified in order to accept .tif format as well as .jpg format for the images. We also compiled a Fiji plugin, [ROIadjust](https://imagej.nih.gov/ij/plugins/roi-adjust.html), so that biologists could correct predicted ROIs graphically.
+
+A biologist run the model on around 300 pictures and decided he needed to correct only 10% of them. He compared results before and after correction and find that the difference was not significant, which means they can use the model's prediction as they come.
+
+| Image |       |mean	   |median	|#glomerulus|
+|-|-|-|-|-|
+|C362A	|before |29,11812	   |29,515	|25|
+|       |after	|29,6632258	 |29,731	|31|
+|C362B	|before	|28,3930333	 |30,242	|30|
+|       |after	|28,6028485	 |29,183	|33|
+|C363A	|before	|32,7878621	 |31,45	  |29|
+|       |after	|33,7888485	 |34,245	|33|
+
 
 #### V2.2 - June 19th 2020
 * Major change : RPN_ANCHOR_SCALES = (64, 128, 256, 512,1024)  
