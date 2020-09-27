@@ -3,7 +3,7 @@
 This repository is an Artificial Intelligence project aiming to segment [kidney glomeruli](https://en.wikipedia.org/wiki/Glomerulus_(kidney)) in histology images.   
 It makes use of the [Mask R-CNN implementation by Matterport](https://github.com/matterport/Mask_RCNN).  
 
-The trained model is used since July 2020 by some biologists at University Paris Diderot in Paris. It segments glomerulus at a speed of 2.3 seconds per image instead of 10 minutes for a human biologist. The performance as of August 2020 is **Mask IoU* = 0.894**. The margin of error has no significant effect on surface measurement that the biologist have to perform.
+The trained model is used since July 2020 by some biologists at University Paris Diderot in Paris. It segments glomerulus at a speed of 2.3 seconds per image instead of 10 minutes for a human biologist. The performance as of August 2020 is **Mask IoU* = 0.894**. The margin of error has no significant effect on the surface measurements that the biologist have to perform.
 
 (** Mask IoU is defined as Intersection over Union between the generated masks and ground truth masks. A 0.88 Mask IoU basically means that the generated mask is 88% accurate)*
 
@@ -106,7 +106,7 @@ First use of the model in production.
 
 The model is the same as V2.2, the code was just modified in order to accept .tif format as well as .jpg format for the images. We also compiled a Fiji plugin, [ROIadjust](https://imagej.nih.gov/ij/plugins/roi-adjust.html), so that biologists could correct predicted ROIs graphically.
 
-A biologist run the model on around 300 pictures and decided he needed to correct only 10% of them. He compared results before and after correction and find that the difference was not significant, which means they can use the model's prediction as they come.
+A biologist ran the model on around 300 pictures and decided he needed to correct only 10% of them. He compared results before and after correction and find that the difference was not significant, which means they can use the model's prediction as they come.
 
 | Image |       |mean	   |median	|#glomerulus|
 |-|-|-|-|-|
