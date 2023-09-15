@@ -1,0 +1,10 @@
+name: glomerulus
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.6
+  - tensorflow=1.15.0
+  - ipykernel
+  - keras=2.2.5
+prefix: /home/studio-lab-user/.conda/envs/glomerulus
